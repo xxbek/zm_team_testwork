@@ -1,0 +1,6 @@
+# Linux (Ubuntu) - Chrome Browser (112 version)
+# https://sites.google.com/chromium.org/driver/downloads
+
+sudo mv chromedriver /usr/local/bin/chromedriver
+sudo chown root:root /usr/local/bin/chromedriver
+sudo chmod +x /usr/local/bin/chromedriver

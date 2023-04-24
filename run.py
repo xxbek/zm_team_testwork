@@ -1,10 +1,10 @@
 from request.parse import NewsRequest
 from request.proxy import ScrapingBeeProxy
 
-url = "https://news.google.com"
+URL = "https://news.google.com"
 
 
-links = NewsRequest(url, ScrapingBeeProxy).news_extraction()
+links = NewsRequest(URL, ScrapingBeeProxy).news_extraction()
 
 print()
 

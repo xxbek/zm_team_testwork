@@ -1,6 +1,8 @@
 import sqlite3
+import logging
 from sqlite3 import Connection, Cursor
 from abc import ABC
+from db.sql_command.sql import InitDatabaseCommand, SQLCookie
 
 
 class Data(ABC):
@@ -19,14 +21,21 @@ class DataSQLite(Data):
         con = sqlite3.connect(db_name)
         return con
 
-    def _create_cursor(self) -> Cursor:
+    def create_cursor(self) -> Cursor:
         cur = self.connection.cursor()
         return cur
 
-    def execute_sql_command(self, sql_command: str) -> None:
-        cur = self._create_cursor()
-        cur.execute(sql_command)
-        cur.fetchone()
+    def init_db(self):
+
+        cur = self.create_cursor()
+
+        cur.execute(InitDatabaseCommand.init_table)
+        cur.executemany(SQLCookie.insert_cookie_row, InitDatabaseCommand.init_data)
+        self.connection.commit()
+
+        logging.info("Database initialized successfully")
+
+
 
 
 
