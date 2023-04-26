@@ -20,23 +20,24 @@ class SeleniumRunner(Runner):
     Function `start` saves cookie and returns a tuple(id_cookie, cookie)
     Function `end` collects all tuples from every process and save data in DB.
     """
-    def __init__(self,  connection: DataConnection, web_driver: SeleniumPage = None):
+    def __init__(self,  connection: DataConnection, web_driver: SeleniumPage = None, proxy: bool = False):
         self._connection = connection
-        self._selenium_page = web_driver or ChromePage
+        self._web_driver_type = web_driver or ChromePage
+        self._selenium_page = None
+        self._proxy = proxy
 
     def start(self, id_link_mapping: tuple) -> tuple:
         id_cookie, url = id_link_mapping
         db_cookie = self._connection.get_cookie_info_by_id(id_cookie)[0]
 
-        # TODO implement proxy or not
-        self._selenium_page(url=url, cookie=db_cookie, proxy=True)
+        self._selenium_page = self._web_driver_type(url=url, cookie=db_cookie, proxy=self._proxy)
         url_cookie = self._selenium_page.get_cookie_from_link()
         id_cookie_mapping = (id_cookie, url_cookie)
         return id_cookie_mapping
 
-    def end(self, response: list[int, dict]) -> None:
+    def end(self, response: list[int, list]) -> None:
         for id_cookie, cookie in response:
-            update_info = (cookie, get_current_time())
+            update_info = (str(cookie), get_current_time())
             self._connection.update_cookie_record(id_cookie, update_info)
 
 

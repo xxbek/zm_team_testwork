@@ -1,9 +1,15 @@
 import re
 from abc import ABC, abstractmethod
 
+AVAILABLE_SITES = (
+    "https://news.google.com",
+    "https://dzen.ru/news"
+)
+
 
 class ExtractionMethod(ABC):
     """Common class for all parsing methods"""
+
     def __init__(self, initial_html: str):
         self.initial_html = initial_html
 
@@ -12,8 +18,8 @@ class ExtractionMethod(ABC):
         pass
 
 
-class RegExpressionExtraction(ExtractionMethod):
-    """A method for html extraction using regular expression
+class REGoogleNewsExtraction(ExtractionMethod):
+    """A method for html extraction using regular expression for news.google.com
 
         ### lxml library is preferred, but it's outside the standard library
         """
@@ -38,9 +44,22 @@ class RegExpressionExtraction(ExtractionMethod):
 
     def extract_article_urls(self) -> list:
         """Extract links from html"""
+
         article_tag_list = self._get_article_tags_body()
         tag_a_list = self._get_tag_a_from_article(article_tag_list)
         article_link = self._get_article_link_from_tag_a(tag_a_list)
 
         return self.fix_article_links(article_link)
+
+
+PREFERRED_METHODS = {
+    "https://news.google.com": REGoogleNewsExtraction,
+    "https://dzen.ru/news": ExtractionMethod,
+}
+
+
+EXTRACTION_URL_METHOD_MAPPING = {
+    site: PREFERRED_METHODS[site] for site in AVAILABLE_SITES
+}
+
 

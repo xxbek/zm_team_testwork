@@ -48,21 +48,23 @@ class DataSQLite(DataConnection):
         logging.info("Database initialized successfully")
 
     def get_cookie_info_by_id(self, id_cookie: int) -> list:
-        """Return a list with cookie, scraping_number_amount and last_scraping_date from Cookie table"""
+        """Return a list with cookie, scraping_number_amount and last_scraping_date from Cookie table
+        (cookie, scraping_number_amount, last_scraping_date)"""
         with self._create_connection() as con:
             cur = con.cursor()
             cur.execute(SQLCookie.get_cookie_info_by_id, (str(id_cookie),))
             return cur.fetchone()
 
-    def update_cookie_record(self, id_cookie: int, data: list) -> None:
+    def update_cookie_record(self, id_cookie: int, data: tuple) -> None:
         """Update single record in cookie table"""
         with self._create_connection() as con:
             cur = con.cursor()
-            # TODO fix shit
-            cur.executemany(SQLCookie.update_cookie_row_by_id, [data[0] + (str(id_cookie),)])
+            data_with_id_cookie = [data + (str(id_cookie), )]
+            cur.executemany(SQLCookie.update_cookie_row_by_id, data_with_id_cookie)
             con.commit()
 
     def select_all_from_cookie(self) -> list:
+        """return (id, creation_date, cookie, scraping_number_amount, last_scraping_date)"""
         with self._create_connection() as con:
             cur = con.cursor()
             cur.execute(SQLCookie.select_all)
