@@ -1,7 +1,4 @@
-from datetime import datetime
-from datetime import timezone
-
-DATE_NOW = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+from utils.utils import get_current_time
 
 
 class InitDatabaseCommand:
@@ -9,7 +6,7 @@ class InitDatabaseCommand:
 
     _initial_cookie_columns_number = 15
 
-    init_table = """CREATE TABLE `Cookie` (
+    create_cookie_table = """CREATE TABLE `Cookie` (
   `id` INT NOT NULL,
   `creation_date` DATE NOT NULL,
   `cookie` TEXT NULL,
@@ -17,11 +14,21 @@ class InitDatabaseCommand:
   `last_scraping_date` DATETIME NULL,
   PRIMARY KEY (`id`));"""
 
-    init_data = data = [(i + 1, DATE_NOW, None, 0, None) for i in range(_initial_cookie_columns_number)]
+    @staticmethod
+    def create_init_data(initial_cookie_columns_number):
+        """Initial test data"""
+        return [(i + 1, get_current_time(), None, 0, None) for i in range(initial_cookie_columns_number)]
 
 
 class SQLCookie:
     """Class for sql command with Cookie table"""
-    insert_cookie_row = """INSERT INTO Cookie VALUES(?, ?, ?, ?, ?)"""
+    get_cookie_info_by_id = """SELECT cookie, scraping_number_amount, last_scraping_date FROM Cookie WHERE id = ?;"""
 
-    update_cookie_row = ...
+    insert_cookie_row = """INSERT INTO Cookie VALUES(?, ?, ?, ?, ?);"""
+
+    update_cookie_row_by_id = """
+    UPDATE Cookie SET cookie = ?, scraping_number_amount = scraping_number_amount + 1, last_scraping_date = ? 
+    WHERE id = ?;"""
+
+    select_all = """SELECT * FROM Cookie"""
+

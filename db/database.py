@@ -1,44 +1,69 @@
+import datetime
 import sqlite3
 import logging
-from sqlite3 import Connection, Cursor
-from abc import ABC
+from sqlite3 import Connection
+from abc import ABC, abstractmethod
 from db.sql_command.sql import InitDatabaseCommand, SQLCookie
 
 
-class Data(ABC):
+class DataConnection(ABC):
     """Common class for database operation"""
 
+    @abstractmethod
+    def init_db(self, initial_cookie_columns_number):
+        pass
 
-class DataSQLite(Data):
+    @abstractmethod
+    def get_cookie_info_by_id(self, id_cookie):
+        pass
+
+    @abstractmethod
+    def update_cookie_record(self, id_cookie: int, data: tuple):
+        pass
+
+
+class DataSQLite(DataConnection):
     """Main class for database operation with sqlite engine"""
 
-    def __init__(self, db_name):
-        self.engine = 'SQLite'
-        self.connection = self._create_connection(db_name)
+    def __init__(self, db_path: str):
+        self._db_path = db_path
 
-    @staticmethod
-    def _create_connection(db_name: str) -> Connection:
-        con = sqlite3.connect(db_name)
-        return con
+    def _create_connection(self) -> Connection:
+        conn = None
+        try:
+            conn = sqlite3.connect(self._db_path)
+        except sqlite3.Error as e:
+            logging.error(e)
 
-    def create_cursor(self) -> Cursor:
-        cur = self.connection.cursor()
-        return cur
+        return conn
 
-    def init_db(self):
-
-        cur = self.create_cursor()
-
-        cur.execute(InitDatabaseCommand.init_table)
-        cur.executemany(SQLCookie.insert_cookie_row, InitDatabaseCommand.init_data)
-        self.connection.commit()
+    def init_db(self, initial_columns_number: int) -> None:
+        """Initialize test database"""
+        with self._create_connection() as con:
+            cur = con.cursor()
+            cur.execute(InitDatabaseCommand.create_cookie_table)
+            cur.executemany(SQLCookie.insert_cookie_row, InitDatabaseCommand.create_init_data(initial_columns_number))
+            con.commit()
 
         logging.info("Database initialized successfully")
 
+    def get_cookie_info_by_id(self, id_cookie: int) -> list:
+        """Return a list with cookie, scraping_number_amount and last_scraping_date from Cookie table"""
+        with self._create_connection() as con:
+            cur = con.cursor()
+            cur.execute(SQLCookie.get_cookie_info_by_id, (str(id_cookie),))
+            return cur.fetchone()
 
+    def update_cookie_record(self, id_cookie: int, data: list) -> None:
+        """Update single record in cookie table"""
+        with self._create_connection() as con:
+            cur = con.cursor()
+            # TODO fix shit
+            cur.executemany(SQLCookie.update_cookie_row_by_id, [data[0] + (str(id_cookie),)])
+            con.commit()
 
-
-
-
-
-
+    def select_all_from_cookie(self) -> list:
+        with self._create_connection() as con:
+            cur = con.cursor()
+            cur.execute(SQLCookie.select_all)
+            return cur.fetchall()

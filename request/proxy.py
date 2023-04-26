@@ -8,12 +8,14 @@ class Proxy(ABC):
 
 
 class ScrapingBeeProxy(Proxy):
-    """Сlass for bypassing news site blocking"""
+    """ScrapingBeeProxy proxy class.
+    https://app.scrapingbee.com
+    """
     API_KEY = '03JU6ZYBH4FUDZZFE42GTWNMC8JU52G4643OQ2OSHK6HSP4707OEQ57ZVRYT54XVUGZ1JF8QO8KWF475'
 
     PROXIES_URL = {
         "http": f"http://{API_KEY}:render_js=False&premium_proxy=True@proxy.scrapingbee.com:8886",
-        "https": f"https://{API_KEY}:render_js=False&premium_proxy=True@proxy.scrapingbee.com:8887"
+        # "verify_ssl": False,
     }
 
 
