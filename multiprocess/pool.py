@@ -21,7 +21,7 @@ class PoolProcess:
         return [(i + 1, link) for i, link in enumerate(self._random_links_list)]
 
     def start_pool(self):
-        """Every process runs function `start`, which launches selenium."""
+        """In pool every runner runs function `start`, which launches selenium."""
         with multiprocessing.Pool(self._process_limit) as p:
             p.map_async(self._runner.start, self._id_cookie_link_mapping, callback=self._runner.end)
             p.close()

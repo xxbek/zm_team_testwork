@@ -1,18 +1,15 @@
 import random
+from tests.conftest import INITIAL_COLUMNS_NUMBER
 from utils.utils import get_current_time
-
-INITIAL_COLUMNS_NUMBER = 15
 
 
 def test_db_init(connection):
-    connection.init_db(INITIAL_COLUMNS_NUMBER)
     data = connection.select_all_from_cookie()
 
     assert len(data) == INITIAL_COLUMNS_NUMBER
 
 
 def test_get_cookie_by_id(connection):
-    connection.init_db(INITIAL_COLUMNS_NUMBER)
     test_cookie_id = random.randint(1, INITIAL_COLUMNS_NUMBER)
     old_data = connection.get_cookie_info_by_id(test_cookie_id)
     update_data = ("'foo': 'bar'", get_current_time(), )
@@ -26,7 +23,6 @@ def test_get_cookie_by_id(connection):
 
 
 def test_update_single_cookie_record(connection):
-    connection.init_db(INITIAL_COLUMNS_NUMBER)
 
     updatable_cookie_id = random.randint(1, INITIAL_COLUMNS_NUMBER)
     old_data = connection.get_cookie_info_by_id(updatable_cookie_id)
@@ -40,7 +36,6 @@ def test_update_single_cookie_record(connection):
 
 
 def test_select_all_from_cookie(connection):
-    connection.init_db(INITIAL_COLUMNS_NUMBER)
     rows = connection.select_all_from_cookie()
 
     assert len(rows) == INITIAL_COLUMNS_NUMBER

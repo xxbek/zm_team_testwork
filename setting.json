@@ -1,0 +1,10 @@
+{
+  "url": "http://lenta.ru",
+  "proxy": false,
+  "pool_process_limit": 5,
+  "run_per_day": 43400,
+  "database": {
+    "db_init_row": 15,
+    "path_to_db": "./sqlite.db"
+  }
+}

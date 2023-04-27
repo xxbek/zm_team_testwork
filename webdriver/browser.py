@@ -8,6 +8,10 @@ from request.proxy import get_proxy_object
 from selenium.common.exceptions import TimeoutException
 
 
+def get_default_web_driver_type():
+    return ChromePage
+
+
 class SeleniumPage(ABC):
     @abstractmethod
     def get_cookie_from_link(self):
@@ -25,6 +29,7 @@ class ChromePage(SeleniumPage):
         self._browser = webdriver.Chrome(seleniumwire_options={'proxy': self._proxy_urls})
         self._browser.set_page_load_timeout(timeout)
 
+        # Random by default
         self._delay = delay or random.randint(1, 5)
 
     def _open_url(self) -> None:
@@ -38,6 +43,8 @@ class ChromePage(SeleniumPage):
 
     def get_cookie_from_link(self):
         """In case of TimeoutException return empty cookie"""
+
+        # TODO При наличии куки он их переиспользует, а нужно обновлять!
         if self._cookie is not None:
             self._set_cookie()
         try:

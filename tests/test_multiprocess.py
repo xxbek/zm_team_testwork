@@ -1,15 +1,19 @@
-import string
+import pytest
 from multiprocess.pool import PoolProcess
-from multiprocess.runner import Runner, SeleniumRunner
-import random
+from multiprocess.runner import SeleniumRunner
+from request.parse import NewsRequest
+from _runner_test import TestRunner
+from tests.conftest import INITIAL_COLUMNS_NUMBER, PROXY_TEST_MODE
+from utils.utils import get_shuffle_list, get_random_string_list
 
+TEST_URL_LIST = (
+    'http://news.google.com',
+    'http://lenta.ru'
+)
 
-with open('_test_links.txt', 'r') as f:
-    TEST_LINKS = [i.strip() for i in f]
+TEST_URL = TEST_URL_LIST[1]
 
-
-def get_random_string_list():
-    return [i+i+i for i in random.sample(string.ascii_letters, 15)]
+ACTIVE_PROCESS_NUMBER = 5
 
 
 def test_pool_work_with_test_runner():
@@ -25,44 +29,49 @@ def test_pool_work_with_test_runner():
     assert runner.check_pool_work(), 'Error in Pool or Runner work'
 
 
-def test_pool_work_with_database_and_news_url(connection):
-    test_links_number = 1
-    connection.init_db(initial_columns_number=test_links_number)
-    start_db_data = connection.select_all_from_cookie()
-    test_links = random.sample(TEST_LINKS, test_links_number)
-    runner = SeleniumRunner(connection=connection, proxy=True)
-    pool = PoolProcess(runner=runner, links_list=test_links, process_limit=1)
+# @pytest.mark.skip(reason='Heavy test with Selemium')
+def test_pool_work_with_database_and_test_url(connection):
+    with open('tests/_test_links.txt', 'r') as f:
+        test_links = [i.strip() for i in f]
+
+    test_links_number = INITIAL_COLUMNS_NUMBER
+    initial_db_rows = connection.select_all_from_cookie()
+
+    test_links = get_shuffle_list(test_links, test_links_number)
+    runner = SeleniumRunner(connection=connection, proxy=PROXY_TEST_MODE)
+    pool = PoolProcess(runner=runner, links_list=test_links, process_limit=ACTIVE_PROCESS_NUMBER)
     pool.start_pool()
 
-    result_db_data = connection.select_all_from_cookie()
+    updated_db_rows = connection.select_all_from_cookie()
 
-    assert len(start_db_data) == len(result_db_data)
+    assert_cookie_after_test(initial_db_rows, updated_db_rows)
 
-    for start_row, result_row in zip(start_db_data, result_db_data):
+
+@pytest.mark.main_run_test
+# @pytest.mark.skip(reason='Heavy test with Selemium')
+def test_pool_work_with_database_and_real_url(connection):
+    initial_db_rows = connection.select_all_from_cookie()
+
+    request = NewsRequest(TEST_URL, proxy=PROXY_TEST_MODE)
+    links = request.news_extraction()
+    shuffle_links = get_shuffle_list(links, INITIAL_COLUMNS_NUMBER)
+
+    runner = SeleniumRunner(connection=connection, proxy=PROXY_TEST_MODE)
+    pool = PoolProcess(runner=runner, links_list=shuffle_links, process_limit=ACTIVE_PROCESS_NUMBER)
+    pool.start_pool()
+
+    updated_db_rows = connection.select_all_from_cookie()
+
+    assert_cookie_after_test(initial_db_rows, updated_db_rows)
+
+
+def assert_cookie_after_test(initial_db_rows: list, updated_db_rows: list):
+    assert len(initial_db_rows) == len(updated_db_rows)
+
+    for start_row, result_row in zip(initial_db_rows, updated_db_rows):
         # row[2] is cookie
         assert start_row[2] is None
         assert start_row[2] != result_row[2]
 
 
-class TestRunner(Runner):
-    """Test Runner Class for checking pool and runner work"""
-    def __init__(self):
-        self._final_data = []
 
-    def start(self, id_link_mapping: tuple) -> tuple:
-        """Work in single process"""
-        id_cookie, url = id_link_mapping
-        process_result = (id_cookie, "Success!", url)
-
-        return process_result
-
-    def end(self, response: tuple) -> None:
-        """Work after the end of all processes. Save tested data in runner to check after"""
-        self._final_data = response
-
-    def check_pool_work(self):
-        """"""
-        for elem in self._final_data:
-            if len(elem) != 3:
-                return False
-        return True
