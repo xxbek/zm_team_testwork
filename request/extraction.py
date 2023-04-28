@@ -80,7 +80,6 @@ class RELentaExtraction(REExtraction):
         return article_link
 
 
-# TODO find better way to map
 PREFERRED_EXTRACTION_URL_METHOD_MAPPING = {
     "https://news.google.com": REGoogleNewsExtraction,
     "http://news.google.com": REGoogleNewsExtraction,

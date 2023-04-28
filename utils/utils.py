@@ -36,3 +36,10 @@ def is_file_exists(path: str) -> bool:
 def get_random_string_list():
     return [i+i+i for i in random.sample(string.ascii_letters, 15)]
 
+
+def output_result(filename: str, conn) -> None:
+    with open(filename, 'a') as file:
+        result = conn.select_all_from_cookie()
+        file.write(str(result))
+        file.write('\n---------------------------\n')
+

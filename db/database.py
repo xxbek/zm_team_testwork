@@ -60,7 +60,8 @@ class DataSQLite(DataConnection):
             return cur.fetchone()
 
     def update_cookie_record(self, id_cookie: int, data: tuple) -> None:
-        """Update single record in cookie table"""
+        """Update single record in cookie table
+        data: (cookie, last_scraping_date)"""
         with self._create_connection() as con:
             cur = con.cursor()
             data_with_id_cookie = [data + (str(id_cookie), )]

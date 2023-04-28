@@ -24,7 +24,7 @@ class ChromePage(SeleniumPage):
     def __init__(self, url, timeout=20, proxy: bool = False, cookie=None, delay=None):
         self.url = url
         self._cookie = cookie
-        self._proxy_object = get_proxy_object() if proxy else None
+        self._proxy_object = get_proxy_object(proxy)
         self._proxy_urls = self._proxy_object.PROXY_URLS if self._proxy_object else {}
         self._browser = webdriver.Chrome(seleniumwire_options={'proxy': self._proxy_urls})
         self._browser.set_page_load_timeout(timeout)

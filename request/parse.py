@@ -1,5 +1,4 @@
 import logging
-
 import requests
 from requests import Response
 from request.extraction import PREFERRED_EXTRACTION_URL_METHOD_MAPPING
